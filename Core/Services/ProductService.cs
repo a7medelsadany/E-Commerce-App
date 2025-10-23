@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Domain.Contracts;
 using Domain.Entities;
+using Domain.Exceptions;
 using Services.Abstractions;
 using Services.Specifications;
 using Shared;
@@ -24,15 +25,19 @@ namespace Services
             return BrandsDto;
         }
 
-        public async Task<IEnumerable<ProductDto>> GetAllProductsAsync(ProductQueryParams queryParams)
+        public async Task<PagintedResult<ProductDto>> GetAllProductsAsync(ProductQueryParams queryParams)
         {
            //var Products = await _unitOfWork.GetReposityory<Product, int>().GetAllAsync();
            // return _mapper.Map<IEnumerable<Product>, IEnumerable<ProductDto>>(Products);
            var Specifications = new ProductWithBrandAndTypeSpecifications(queryParams);
             var Repo = _unitOfWork.GetReposityory<Product, int>();
-            var Products = await Repo.GetAllAsync(Specifications); //Product
-            var ProductsData = _mapper.Map<IEnumerable<Product>, IEnumerable<ProductDto>>(Products);
-            return ProductsData;
+            var AllProducts = await Repo.GetAllAsync(Specifications); //Product
+            var Data = _mapper.Map<IEnumerable<Product>, IEnumerable<ProductDto>>(AllProducts);
+            var ProductCount=AllProducts.Count();
+            var CountSpec = new ProductCountSpecifications(queryParams);
+            var TotalCount=await Repo.CountAsync(CountSpec);
+
+            return new PagintedResult<ProductDto>(ProductCount, queryParams.pageIndex, TotalCount, Data);
         }
 
         public async Task<IEnumerable<TypeDto>> GetAllTypesAsync()
@@ -45,6 +50,10 @@ namespace Services
         {
             var Specifications = new ProductWithBrandAndTypeSpecifications(Id);
             var Product = await _unitOfWork.GetReposityory<Product,int>().GetByIdAsync(Specifications);
+            if(Product is null)
+            {
+                throw new ProductNotFoundException(Id);
+            }
             return _mapper.Map<Product, ProductDto>(Product);
 
         }

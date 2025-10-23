@@ -19,9 +19,8 @@ namespace Services.Specifications
         {
             AddInclude(p => p.ProductBrand);
             AddInclude(p => p.ProductType);
-
             #region Sorting
-            switch(queryParams.SortingOptions)
+            switch (queryParams.SortingOptions)
             {
                 case ProductSortingOptions.NameAsc:
                     AddOrderBy(P => P.Name);
@@ -39,8 +38,15 @@ namespace Services.Specifications
                     break;
             }
             #endregion
+
+            ApplyPagination(queryParams.PageSize, queryParams.pageIndex);
+
+            
         }
-        //GetById
+
+        //--------------------------------------------------------------------------------
+
+        //Get By Id
         public ProductWithBrandAndTypeSpecifications(int Id) :base(P => P.Id == Id)
         {
             AddInclude(p => p.ProductBrand);

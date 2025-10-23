@@ -7,6 +7,7 @@ using Persistance.Repositories;
 using AutoMapper;
 using Services;
 using Services.Abstractions;
+using E_Commerce.CustomMiddleware;
 
 namespace E_Commerce
 {
@@ -41,14 +42,16 @@ namespace E_Commerce
 
            
             var app = builder.Build();
+            //-----------------
             #region Services
             var Scope = app.Services.CreateScope();
             var ObjectOfDataSeeding = Scope.ServiceProvider.GetRequiredService<IDataSeeding>(); 
             await ObjectOfDataSeeding.DataSeedAsync();
             #endregion
-
+            //-----------------
 
             // Configure the HTTP request pipeline.
+            app.UseMiddleware<CustomExceptionHandlerMiddleware>();
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
