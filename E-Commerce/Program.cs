@@ -8,6 +8,11 @@ using AutoMapper;
 using Services;
 using Services.Abstractions;
 using E_Commerce.CustomMiddleware;
+using Microsoft.AspNetCore.Mvc;
+using Shared.ErrorModels;
+using E_Commerce.Factories;
+using E_Commerce.Extentions;
+using StackExchange.Redis;
 
 namespace E_Commerce
 {
@@ -24,17 +29,19 @@ namespace E_Commerce
 
             //----------------------------------------------------------------------------------------
             #region Configure Services
-            builder.Services.AddDbContext<StoreDbContext>(options =>
-
+            builder.Services.AddInfrastructureServices(builder.Configuration);
+            builder.Services.AddCoreServices();
+            builder.Services.AddTransient<PictureUrlResolver>();
+            builder.Services.AddScoped<IBasketRepository, BasketRepository>();
+            builder.Services.AddScoped<IConnectionMultiplexer>((_) =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+                return ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConnection"));
             });
 
-            builder.Services.AddScoped<IDataSeeding, DataSeeding>();
-            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-            builder.Services.AddAutoMapper(X => X.AddProfile(new MappingProfiles()));
-            builder.Services.AddScoped<IServiceManager, ServiceManager>();
-            builder.Services.AddTransient<PictureUrlResolver>();
+            builder.Services.Configure<ApiBehaviorOptions> ((options) =>
+            {
+                options.InvalidModelStateResponseFactory = APIResponseFactory.GenerateApiValidationErrorResponse;
+            });
             #endregion
             //------------------------------------------------------------------------------------
             builder.Services.AddEndpointsApiExplorer();

@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
-using Domain.Entities;
+using Domain.Entities.BasketModule;
+using Domain.Entities.ProductModule;
 using Shared.DTOS;
+using Shared.DTOS.BasketDTOS;
 
 namespace Services
 {
@@ -20,10 +22,12 @@ namespace Services
                 .ForMember(dist => dist.PictureUrl, options => options.MapFrom<PictureUrlResolver>());
             CreateMap<ProductType, TypeDto>();
             CreateMap<ProductBrand, BrandDto>();
-
-        }
-
             #endregion
-        
+
+            #region Basket
+            CreateMap<CustomerBasket, BasketDto>().ReverseMap();
+            CreateMap<BasketItem, BasketItemDto>().ReverseMap();
+            #endregion
+        }
     }
 }
