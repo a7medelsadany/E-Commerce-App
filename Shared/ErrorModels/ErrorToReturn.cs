@@ -10,5 +10,6 @@ namespace Shared.ErrorModels
     {
         public int StatusCode { get; set; }
         public String ErrorMessage { get; set; } = null!;
+        public List<String>? Errors { get; set; }
     }
 }
